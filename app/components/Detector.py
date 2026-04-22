@@ -1,10 +1,31 @@
 import sys
 import os
-# Go up 2 levels: components/ -> project root
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# ── Robust path resolution for both local and Streamlit Cloud ──
+# Streamlit Cloud: /mount/src/<repo>/app/components/Detector.py
+# Local:          <project>/app/components/Detector.py  OR  <project>/components/Detector.py
+# src/ lives at the REPO ROOT — 2 or 3 levels above this file
+_this_file = os.path.abspath(__file__)               # .../components/Detector.py
+_components_dir = os.path.dirname(_this_file)        # .../components/
+_app_dir = os.path.dirname(_components_dir)          # .../app/
+_repo_root = os.path.dirname(_app_dir)               # repo root where src/ lives
+
+for _path in [_repo_root, _app_dir, _components_dir]:
+    if _path not in sys.path:
+        sys.path.insert(0, _path)
 
 import streamlit as st
-from src.predict import predict_news
+
+# Try importing — handle both src.predict and direct predict
+try:
+    from src.predict import predict_news
+except ModuleNotFoundError:
+    try:
+        from predict import predict_news
+    except ModuleNotFoundError as e:
+        import streamlit as st
+        st.error(f"❌ Could not import predict_news. sys.path: {sys.path}\nError: {e}")
+        st.stop()
 
 
 def run():
