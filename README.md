@@ -253,8 +253,9 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ## 👨‍💻 Author
 
 **Your Name**
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
+- GitHub: [@YOUR_USERNAME](https://github.com/hiteshparmar18)
 - LinkedIn: [linkedin.com/in/YOUR_PROFILE](http://linkedin.com/in/hiteshparmar18/)
+- Portfolio: [PORTFOLIO PROFILE](https://hitesh-portfolio-eta.vercel.app/)
 
 ---
 
