@@ -4,8 +4,27 @@ st.set_page_config(
     page_title="Fake News AI",
     page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
+
+# ── Hide Streamlit multipage auto-nav (caused by pages/ folder) ──
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarNavItems"],
+[data-testid="stSidebarNavSeparator"],
+section[data-testid="stSidebar"] nav,
+.st-emotion-cache-pbk8do,
+.st-emotion-cache-1rtdyuf,
+.st-emotion-cache-eczf16,
+ul[data-testid="stSidebarNavItems"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Global sidebar + app shell styles
 st.markdown("""
@@ -94,13 +113,19 @@ header[data-testid="stHeader"] {
     max-width: 1100px;
 }
 
-/* Responsive: hide sidebar on mobile */
-@media (max-width: 640px) {
+/* Responsive mobile */
+@media (max-width: 768px) {
     [data-testid="stSidebar"] {
         min-width: 200px !important;
+        max-width: 80vw !important;
     }
     [data-testid="block-container"] {
         padding: 0 12px !important;
+    }
+    /* Keep hamburger menu button visible on mobile */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
     }
 }
 </style>
@@ -127,13 +152,67 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Route pages
+# ── Auto-close sidebar on mobile after nav selection ──
+st.markdown("""
+<script>
+(function() {
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function closeSidebar() {
+        // Find Streamlit's sidebar close/collapse button and click it
+        const closeBtn = document.querySelector('[data-testid="collapsedControl"]') ||
+                         document.querySelector('button[aria-label="Close sidebar"]') ||
+                         document.querySelector('button[kind="header"]');
+        if (closeBtn) closeBtn.click();
+
+        // Fallback: find the chevron/arrow button inside the sidebar
+        const sidebarBtns = document.querySelectorAll('[data-testid="stSidebar"] button');
+        sidebarBtns.forEach(btn => {
+            const label = btn.getAttribute('aria-label') || '';
+            if (label.toLowerCase().includes('close') || label.toLowerCase().includes('collapse')) {
+                btn.click();
+            }
+        });
+    }
+
+    function attachListeners() {
+        const radioInputs = document.querySelectorAll('[data-testid="stSidebar"] input[type="radio"]');
+        radioInputs.forEach(function(input) {
+            if (!input.dataset.mobileListenerAttached) {
+                input.dataset.mobileListenerAttached = "true";
+                input.addEventListener('change', function() {
+                    if (isMobile()) {
+                        // Small delay so Streamlit registers the selection first
+                        setTimeout(closeSidebar, 120);
+                    }
+                });
+            }
+        });
+    }
+
+    // Run on load and re-run after Streamlit re-renders
+    const observer = new MutationObserver(function() {
+        attachListeners();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Initial attach attempt
+    setTimeout(attachListeners, 500);
+    setTimeout(attachListeners, 1500);
+})();
+</script>
+""", unsafe_allow_html=True)
+
+# Route pages — import from components/ (not pages/ which triggers Streamlit multipage)
 if "Home" in page:
-    from pages import Home
+    from components import Home
     Home.run()
 elif "Detector" in page:
-    from pages import Detector
+    from components import Detector
     Detector.run()
 elif "About" in page:
-    from pages import About
+    from components import About
     About.run()

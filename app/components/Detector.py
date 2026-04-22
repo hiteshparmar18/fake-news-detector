@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Go up 2 levels: components/ -> project root
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
 from src.predict import predict_news
@@ -104,6 +105,18 @@ def run():
         border-color: rgba(99,102,241,0.4) !important;
         color: #a5b4fc !important;
         background: rgba(99,102,241,0.06) !important;
+    }
+
+    /* Clear button — 3rd column */
+    div[data-testid="column"]:nth-child(3) .stButton > button {
+        background: rgba(15,10,10,0.8) !important;
+        color: #64748b !important;
+        border: 1px solid rgba(127,29,29,0.4) !important;
+    }
+    div[data-testid="column"]:nth-child(3) .stButton > button:hover {
+        background: rgba(239,68,68,0.08) !important;
+        border-color: rgba(239,68,68,0.45) !important;
+        color: #f87171 !important;
     }
 
     /* Spinner overrides */
@@ -289,21 +302,38 @@ def run():
     </div>
     """, unsafe_allow_html=True)
 
-    user_input = st.text_area("", placeholder="Paste or type a news article here...", height=220, label_visibility="collapsed")
+    # ── Session state init ──
+    # Use "detector_input" as the backing store — never the same key as the widget
+    if "detector_input" not in st.session_state:
+        st.session_state["detector_input"] = ""
 
-    col1, col2 = st.columns([3, 2])
+    col1, col2, col3 = st.columns([5, 3, 2])
     with col1:
-        analyze = st.button("🔍 Analyze with AI")
+        analyze = st.button("🔍 Analyze with AI", use_container_width=True)
     with col2:
-        sample = st.button("📌 Load Sample Text")
+        sample = st.button("📌 Load Sample", use_container_width=True)
+    with col3:
+        clear = st.button("🗑️ Clear", use_container_width=True)
 
-    # Handle sample
+    # Handle sample — set backing store BEFORE the widget renders
     if sample:
-        st.session_state["sample_loaded"] = True
+        st.session_state["detector_input"] = "Breaking: Scientists confirm drinking coffee makes you immortal. Studies from an unknown lab in Nevada suggest that 10 cups a day reverses aging completely."
 
-    if st.session_state.get("sample_loaded") and not user_input.strip():
-        user_input = "Breaking: Scientists confirm drinking coffee makes you immortal. Studies from an unknown lab in Nevada suggest that 10 cups a day reverses aging completely."
-        st.info("✨ Sample text loaded — click **Analyze with AI** to test it.")
+    # Handle clear — wipe backing store BEFORE the widget renders
+    if clear:
+        st.session_state["detector_input"] = ""
+
+    # Textarea reads from backing store; its own key is different
+    user_input = st.text_area(
+        "",
+        value=st.session_state["detector_input"],
+        placeholder="Paste or type a news article here...",
+        height=220,
+        label_visibility="collapsed",
+        key="detector_widget"
+    )
+    # Keep backing store in sync with what the user types
+    st.session_state["detector_input"] = user_input
 
     # PREDICTION
     if analyze:
