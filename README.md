@@ -10,7 +10,7 @@
 
 **An end-to-end AI system that detects fake news in real time using NLP and Machine Learning.**
 
-[🚀 Live Demo](#deployment) · [📸 Screenshots](#screenshots) · [⚙️ Installation](#installation) · [🤝 Contributing](#contributing)
+[🚀 Live Demo](https://fake-news-detector-l27wkvntua4wqmebkhrghb.streamlit.app/) · [📸 Screenshots](#screenshots) · [⚙️ Installation](#installation) · [🤝 Contributing](#contributing)
 
 </div>
 
